@@ -1,5 +1,6 @@
 import React from 'react';
 import { Leaf } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 export default function Login() {
   const handleGoogle = () => {
@@ -16,10 +17,28 @@ export default function Login() {
         boxShadow: '0 20px 60px rgba(34,197,94,0.15)', maxWidth: 420, width: '100%',
         textAlign: 'center', animation: 'fadeIn .5s ease',
       }}>
-        <div style={{ display:'flex', justifyContent:'center', marginBottom: 8 }}>
-          <Leaf size={56} color="#16a34a" />
+        <div style={{ marginBottom: 8 }}>
+          <img
+            src={logo}
+            alt="DayFlow"
+            style={{
+              width: 90,
+              height: 90,
+              objectFit: 'contain',
+              mixBlendMode: 'multiply',
+            }}
+          />
         </div>
-        <h1 style={{ fontSize: 32, fontWeight: 800, color: '#14532d', marginBottom: 4 }}>DayFlow</h1>
+        <p style={{
+          fontSize: 11,
+          fontWeight: 700,
+          color: '#16a34a',
+          letterSpacing: 3,
+          textTransform: 'uppercase',
+          marginBottom: 4,
+        }}>
+          PLAN · FOCUS · GROW
+        </p>
         <p style={{ color: '#4a6741', marginBottom: 32, fontSize: 15 }}>
           Planifie intelligemment ta journée, chaque jour.
         </p>

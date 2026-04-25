@@ -1,13 +1,12 @@
-// C:\Users\axelm\Programmation\dayflow-app\client\src\pages\Landing.jsx
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import {
   Calendar, CheckCircle, BarChart2, Zap, BookOpen, Moon, Sun,
-  ArrowBigRight, Sparkles, ShieldCheck, Clock, Target,
+  ArrowRight, Sparkles, ShieldCheck, Clock, Target, Heart,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import logo from '../assets/logo.png';
 import animationData from '../assets/Female Employee Working on Data Security.json';
 
 const DAILY_VERSE = [
@@ -105,7 +104,7 @@ export default function Landing() {
       overflowX: 'hidden'
     }}>
 
-      {/* ── Navbar améliorée ── */}
+      {/* Navbar */}
       <nav style={{
         position: 'fixed', 
         top: 0, 
@@ -114,7 +113,7 @@ export default function Landing() {
         zIndex: 1000,
         background: scrolled ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.85)',
         backdropFilter: 'blur(20px)',
-        borderBottom: scrolled ? '1px solid rgba(34,197,94,0.1)' : '1px solid var(--border-light)',
+        borderBottom: scrolled ? '1px solid rgba(34,197,94,0.1)' : '1px solid #e2e8f0',
         padding: '0 5%',
         height: 70,
         display: 'flex',
@@ -129,19 +128,16 @@ export default function Landing() {
           gap: 12,
           cursor: 'pointer'
         }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <div style={{
-            width: 38,
-            height: 38,
-            borderRadius: 12,
-            background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 10px rgba(34,197,94,0.3)',
-            animation: 'pulse 2s infinite'
-          }}>
-            <Zap size={20} color="#fff" strokeWidth={2.5} />
-          </div>
+          <img
+            src={logo}
+            alt="DayFlow"
+            style={{
+              width: 40,
+              height: 40,
+              objectFit: 'contain',
+              borderRadius: 10,
+            }}
+          />
           <span style={{ 
             fontSize: 20, 
             fontWeight: 800, 
@@ -160,14 +156,20 @@ export default function Landing() {
               border: 'none',
               fontSize: 14,
               fontWeight: 600,
-              color: 'var(--text-2)',
+              color: '#475569',
               cursor: 'pointer',
               padding: '8px 16px',
               borderRadius: 20,
               transition: 'all 0.2s'
             }}
-            onMouseEnter={e => e.currentTarget.style.background = '#f0fdf4'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = '#f0fdf4';
+              e.currentTarget.style.color = '#166534';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = '#475569';
+            }}
           >
             Fonctionnalités
           </button>
@@ -197,23 +199,23 @@ export default function Landing() {
               e.currentTarget.style.boxShadow = '0 2px 8px rgba(34,197,94,0.3)';
             }}
           >
-            Commencer <ArrowBigRight size={16} />
+            Commencer <ArrowRight size={16} />
           </button>
         </div>
       </nav>
 
-      {/* ── Hero section avec Lottie ── */}
+      {/* Hero Section */}
       <section style={{
         maxWidth: 1200,
         margin: '0 auto',
-        padding: '120px 5% 60px',
+        padding: '140px 5% 80px',
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
         gap: 60,
         alignItems: 'center',
         minHeight: '90vh'
       }}>
-        {/* Left side - Texte */}
+        {/* Left side */}
         <div>
           <div style={{
             display: 'inline-flex',
@@ -346,7 +348,7 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Right side - Lottie Animation */}
+        {/* Right side - Lottie */}
         <div style={{
           animation: 'slideInRight 0.8s ease-out',
           position: 'relative'
@@ -370,7 +372,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Verset du jour amélioré ── */}
+      {/* Verset du jour */}
       {verse && (
         <section style={{ maxWidth: 900, margin: '0 auto 80px', padding: '0 5%' }}>
           <div style={{
@@ -385,7 +387,6 @@ export default function Landing() {
           }}
           onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'}
           onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
-            {/* Décorations */}
             <div style={{
               position: 'absolute',
               top: -50,
@@ -447,16 +448,16 @@ export default function Landing() {
               alignItems: 'center',
               gap: 12,
             }}>
-              <Sparkles size={16} color="#fbbf24" />
+              <Heart size={16} color="#fbbf24" fill="#fbbf24" />
               <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.9)', fontStyle: 'italic', margin: 0 }}>
-                💫 {encouragement}
+                {encouragement}
               </p>
             </div>
           </div>
         </section>
       )}
 
-      {/* ── Features avec animations ── */}
+      {/* Features */}
       <section id="features" style={{ maxWidth: 1100, margin: '0 auto 100px', padding: '0 5%' }}>
         <div style={{ textAlign: 'center', marginBottom: 60 }}>
           <div style={{
@@ -529,7 +530,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── CTA final amélioré ── */}
+      {/* CTA final */}
       <section style={{
         maxWidth: 800,
         margin: '0 auto 100px',
@@ -548,7 +549,6 @@ export default function Landing() {
         }}
         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
         onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-          {/* Background decoration */}
           <div style={{
             position: 'absolute',
             top: -100,
@@ -601,7 +601,7 @@ export default function Landing() {
               e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
             }}
           >
-            Connexion avec Google <ArrowBigRight size={16} />
+            Commencer maintenant <ArrowRight size={16} />
           </button>
         </div>
       </section>
@@ -618,13 +618,7 @@ export default function Landing() {
         </p>
       </footer>
 
-      {/* Styles d'animation */}
-      <style jsx>{`
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
-        
+      <style>{`
         @keyframes slideInLeft {
           from {
             opacity: 0;

@@ -1,5 +1,3 @@
-// C:\Users\axelm\Programmation\dayflow-app\server\models\UserPattern.js
-
 const mongoose = require('mongoose');
 
 const userPatternSchema = new mongoose.Schema({

@@ -41,6 +41,7 @@ class MLApiService {
     return {
       wakeUpTime: user.wakeUpTime || '05:00',
       sleepTime: user.sleepTime || '22:00',
+      courseStartTime: user.courseStartTime || '06:00',
       courseEndTime: user.courseEndTime || '18:00',
       arrivalTime: user.arrivalTime || '20:30',
       energyPeaks: user.energyPeaks || ['08:00', '14:00'],

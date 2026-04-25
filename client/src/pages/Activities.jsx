@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookmarkPlus } from 'lucide-react';
+import { BookmarkPlus, Edit2, Trash2, Clock, Calendar, Flag, Tag, X, Check, Zap } from 'lucide-react';
 import api from '../api';
 import { CATEGORY_COLORS, CATEGORY_ICONS } from '../utils/dates';
 import { ACTIVITY_ICON_CHOICES, renderLucideIcon } from '../utils/icons';
@@ -7,28 +7,35 @@ import { getWeekStart } from '../utils/dates';
 
 const DAYS = ['lun','mar','mer','jeu','ven','sam','dim'];
 const DAY_LABELS = { lun:'Lun', mar:'Mar', mer:'Mer', jeu:'Jeu', ven:'Ven', sam:'Sam', dim:'Dim' };
-const CATEGORIES = ['études','loisirs','projet','routine','sport','autre'];
+const CATEGORIES = [
+  { value: 'études', label: 'Études', icon: 'GraduationCap', color: '#3b82f6' },
+  { value: 'loisirs', label: 'Loisirs', icon: 'Gamepad2', color: '#8b5cf6' },
+  { value: 'projet', label: 'Projet', icon: 'Briefcase', color: '#f59e0b' },
+  { value: 'routine', label: 'Routine', icon: 'RefreshCw', color: '#10b981' },
+  { value: 'sport', label: 'Sport', icon: 'Dumbbell', color: '#ef4444' },
+  { value: 'autre', label: 'Autre', icon: 'MoreHorizontal', color: '#64748b' },
+];
 const PRIORITIES = [
-  { value: 1, label: 'Haute', color: '#ef4444' },
-  { value: 2, label: 'Moyenne', color: '#f59e0b' },
-  { value: 3, label: 'Basse', color: '#22c55e' },
+  { value: 1, label: 'Haute', color: '#ef4444', icon: 'Flag' },
+  { value: 2, label: 'Moyenne', color: '#f59e0b', icon: 'Flag' },
+  { value: 3, label: 'Basse', color: '#22c55e', icon: 'Flag' },
 ];
 
 const empty = {
   name: '', duration: 60, priority: 2,
   category: 'autre', type: 'flexible',
-  days: [], deadline: '', icon: 'Pin', color: '#4ade80',
+  days: [], deadline: '', icon: 'Zap', color: '#4ade80',
 };
 
 const IconPicker = ({ selectedIcon, onChange }) => (
   <div style={{ 
     display: 'grid', 
-    gridTemplateColumns: 'repeat(5, 1fr)', 
+    gridTemplateColumns: 'repeat(6, 1fr)', 
     gap: '8px', 
-    padding: '10px', 
-    background: 'var(--bg-card2)', 
-    borderRadius: '12px',
-    border: '1px solid var(--border)' 
+    padding: '12px', 
+    background: '#f8fafc', 
+    borderRadius: '16px',
+    border: '1px solid #e2e8f0' 
   }}>
     {ACTIVITY_ICON_CHOICES.map((iconName) => (
       <button
@@ -40,14 +47,24 @@ const IconPicker = ({ selectedIcon, onChange }) => (
           alignItems: 'center',
           justifyContent: 'center',
           padding: '10px',
-          borderRadius: '8px',
-          border: selectedIcon === iconName ? '2px solid #22c55e' : '1px solid transparent',
-          background: selectedIcon === iconName ? '#f0fdf4' : 'transparent',
+          borderRadius: '10px',
+          border: selectedIcon === iconName ? '2px solid #22c55e' : '1px solid #e2e8f0',
+          background: selectedIcon === iconName ? '#f0fdf4' : '#fff',
           cursor: 'pointer',
           transition: 'all 0.2s'
         }}
+        onMouseEnter={e => {
+          if (selectedIcon !== iconName) {
+            e.currentTarget.style.background = '#f1f5f9';
+          }
+        }}
+        onMouseLeave={e => {
+          if (selectedIcon !== iconName) {
+            e.currentTarget.style.background = '#fff';
+          }
+        }}
       >
-        {renderLucideIcon(iconName, 20, selectedIcon === iconName ? '#22c55e' : '#64748b')}
+        {renderLucideIcon(iconName, 18, selectedIcon === iconName ? '#22c55e' : '#64748b')}
       </button>
     ))}
   </div>
@@ -59,6 +76,8 @@ export default function Activities() {
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
 
   useEffect(() => {
     api.get('/activities').then((r) => setActivities(r.data.activities)).finally(() => setLoading(false));
@@ -74,7 +93,6 @@ export default function Activities() {
         const res = await api.post('/activities', form);
         setActivities([...activities, res.data.activity]);
       }
-      // Mettre à jour le planning en arrière-plan (sans perdre les cases cochées).
       api.post(`/planning/generate/${getWeekStart()}`).catch(() => {});
       setForm(empty); setEditing(null); setShowForm(false);
     } catch (err) {
@@ -83,7 +101,7 @@ export default function Activities() {
   };
 
   const edit = (a) => {
-    setForm({ ...a, deadline: a.deadline || '', icon: a.icon || CATEGORY_ICONS[a.category] || 'Pin' });
+    setForm({ ...a, deadline: a.deadline || '', icon: a.icon || CATEGORY_ICONS[a.category] || 'Zap' });
     setEditing(a._id);
     setShowForm(true);
   };
@@ -103,138 +121,353 @@ export default function Activities() {
 
   const openNew = () => { setForm({ ...empty }); setEditing(null); setShowForm(true); };
 
-  const inp = { padding:'8px 12px', borderRadius:8, border:'1px solid var(--border)', fontSize:13, width:'100%', color:'var(--text)', background:'var(--bg)' };
+  const filteredActivities = activities.filter(a => {
+    if (filterType !== 'all' && a.type !== filterType) return false;
+    if (filterCategory !== 'all' && a.category !== filterCategory) return false;
+    return true;
+  });
+
+  const getCategoryInfo = (category) => {
+    return CATEGORIES.find(c => c.value === category) || CATEGORIES[5];
+  };
+
+  const inp = { 
+    padding: '10px 14px', 
+    borderRadius: '12px', 
+    border: '2px solid #e2e8f0', 
+    fontSize: 13, 
+    width: '100%', 
+    color: '#0f172a', 
+    background: '#fff',
+    transition: 'all 0.2s',
+    outline: 'none'
+  };
 
   return (
-    <div style={{ maxWidth: 900, animation:'fadeIn .3s ease' }}>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
-        <div>
-          <h1 style={{ fontSize:22, fontWeight:800, color:'var(--text)', display:'flex', alignItems:'center', gap:8 }}>
-            {renderLucideIcon('CheckCircle2', 20, '#166534')} Mes activités
-          </h1>
-          <p style={{ fontSize:13, color:'var(--text-3)' }}>{activities.length} activité(s) configurée(s)</p>
+    <div style={{ 
+      maxWidth: 1000, 
+      margin: '0 auto', 
+      animation: 'fadeIn 0.4s ease-out',
+      padding: '0 8px'
+    }}>
+      
+      {/* Header */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            borderRadius: 16,
+            background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(34,197,94,0.25)'
+          }}>
+            <Zap size={24} color="#fff" />
+          </div>
+          <div>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: '#0f172a', margin: 0 }}>
+              Mes activités
+            </h1>
+            <p style={{ fontSize: 14, color: '#64748b', marginTop: 4 }}>
+              Gérez vos tâches et activités quotidiennes
+            </p>
+          </div>
         </div>
-          <button 
-            onClick={openNew} 
+      </div>
+
+      {/* Stats et bouton */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: 24,
+        flexWrap: 'wrap',
+        gap: 16
+      }}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{
+            background: '#f0fdf4',
+            borderRadius: 12,
+            padding: '8px 16px',
+            border: '1px solid #bbf7d0'
+          }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#166534' }}>
+              Total: {activities.length} activité(s)
+            </span>
+          </div>
+          <div style={{
+            background: '#f1f5f9',
+            borderRadius: 12,
+            padding: '8px 16px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#64748b' }}>
+              Flexibles: {activities.filter(a => a.type === 'flexible').length}
+            </span>
+          </div>
+          <div style={{
+            background: '#fef3c7',
+            borderRadius: 12,
+            padding: '8px 16px',
+            border: '1px solid #fde68a'
+          }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#92400e' }}>
+              Fixes: {activities.filter(a => a.type === 'fixe').length}
+            </span>
+          </div>
+        </div>
+        
+        <button 
+          onClick={openNew} 
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 24px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+            color: '#fff',
+            fontWeight: 700,
+            fontSize: '14px',
+            border: 'none',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            boxShadow: '0 2px 8px rgba(34,197,94,0.3)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(34,197,94,0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(34,197,94,0.3)';
+          }}
+        >
+          <BookmarkPlus size={18} />
+          <span>Nouvelle activité</span>
+        </button>
+      </div>
+
+      {/* Filtres */}
+      <div style={{
+        display: 'flex',
+        gap: 12,
+        marginBottom: 24,
+        flexWrap: 'wrap',
+        padding: '12px 0'
+      }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <span style={{ fontSize: 12, color: '#64748b' }}>Type:</span>
+          {['all', 'flexible', 'fixe'].map(type => (
+            <button
+              key={type}
+              onClick={() => setFilterType(type)}
+              style={{
+                padding: '6px 14px',
+                borderRadius: 20,
+                fontSize: 12,
+                fontWeight: 600,
+                background: filterType === type ? '#22c55e' : '#f1f5f9',
+                color: filterType === type ? '#fff' : '#64748b',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              {type === 'all' ? 'Tous' : type === 'flexible' ? 'Flexibles' : 'Fixes'}
+            </button>
+          ))}
+        </div>
+        
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <span style={{ fontSize: 12, color: '#64748b' }}>Catégorie:</span>
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
             style={{
-              display: 'flex',          // Permet d'aligner l'icône et le texte
-              alignItems: 'center',      // Centre verticalement
-              gap: '8px',                // Espace entre l'icône et le texte
-              padding: '10px 20px', 
-              borderRadius: '10px', 
-              background: '#22c55e',
-              color: '#fff', 
-              fontWeight: 700, 
-              fontSize: '13px',
-              border: 'none',            // Supprime la bordure par défaut
-              cursor: 'pointer',         // Change le curseur en main
-              transition: 'all 0.2s',    // Animation douce pour le hover
-              boxShadow: '0 2px 4px rgba(34, 197, 94, 0.2)', // Ombre légère colorée
+              padding: '6px 14px',
+              borderRadius: 20,
+              fontSize: 12,
+              fontWeight: 600,
+              background: '#f1f5f9',
+              color: '#64748b',
+              border: 'none',
+              cursor: 'pointer'
             }}
-            // Optionnel : petit effet d'assombrissement au survol
-            onMouseEnter={(e) => e.currentTarget.style.background = '#16a34a'}
-            onMouseLeave={(e) => e.currentTarget.style.background = '#22c55e'}
           >
-            <BookmarkPlus size={18} />   {/* Taille harmonisée avec le texte */}
-            <span>Nouvelle activité</span>
-          </button>
+            <option value="all">Toutes</option>
+            {CATEGORIES.map(cat => (
+              <option key={cat.value} value={cat.value}>{cat.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Form modal */}
       {showForm && (
         <div style={{
-          position:'fixed', inset:0, background:'rgba(0,0,0,0.4)',
-          display:'flex', alignItems:'center', justifyContent:'center', zIndex:100,
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.5)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 100,
         }} onClick={(e) => e.target === e.currentTarget && setShowForm(false)}>
           <div style={{
-            background:'#fff', borderRadius:16, padding:'28px', width:'100%', maxWidth:520,
-            boxShadow:'var(--shadow-lg)', animation:'fadeIn .2s ease', maxHeight:'90vh', overflowY:'auto',
+            background: '#fff',
+            borderRadius: 24,
+            padding: '32px',
+            width: '100%',
+            maxWidth: 560,
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+            animation: 'slideUp 0.3s ease',
+            maxHeight: '90vh',
+            overflowY: 'auto'
           }}>
-            <h2 style={{ fontSize:16, fontWeight:800, marginBottom:20, color:'var(--text)' }}>
-              {editing ? 'Modifier l\'activité' : 'Nouvelle activité'}
-            </h2>
-            <form onSubmit={save} style={{ display:'flex', flexDirection:'column', gap:12 }}>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                
-                {/* Ligne du Nom */}
-                <div>
-                  <label style={{fontSize:11, fontWeight:700, color:'var(--text-3)', display:'block', marginBottom:4}}>Nom de l'activité</label>
-                  <input style={inp} placeholder="Ex: Yoga, Révisions..." value={form.name}
-                    onChange={e => setForm({...form, name:e.target.value})} required />
-                </div>
-
-                {/* Sélecteur d'icônes visuel */}
-                <div>
-                  <label style={{fontSize:11, fontWeight:700, color:'var(--text-3)', display:'block', marginBottom:8}}>Choisir une icône</label>
-                  <IconPicker 
-                    selectedIcon={form.icon} 
-                    onChange={(iconName) => setForm({ ...form, icon: iconName })} 
-                  />
-                </div>
-                
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                {editing ? 'Modifier l\'activité' : 'Nouvelle activité'}
+              </h2>
+              <button
+                onClick={() => setShowForm(false)}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 10,
+                  background: '#f1f5f9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <X size={16} color="#64748b" />
+              </button>
+            </div>
+            
+            <form onSubmit={save} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>
+                  Nom de l'activité
+                </label>
+                <input 
+                  style={inp} 
+                  placeholder="Ex: Yoga, Révisions, Sport..." 
+                  value={form.name}
+                  onChange={e => setForm({...form, name: e.target.value})} 
+                  required 
+                  onFocus={e => e.currentTarget.style.borderColor = '#22c55e'}
+                  onBlur={e => e.currentTarget.style.borderColor = '#e2e8f0'}
+                />
               </div>
 
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 8 }}>
+                  Choisir une icône
+                </label>
+                <IconPicker 
+                  selectedIcon={form.icon} 
+                  onChange={(iconName) => setForm({ ...form, icon: iconName })} 
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
-                  <label style={{fontSize:11, fontWeight:700, color:'var(--text-3)', display:'block', marginBottom:4}}>Durée (min)</label>
-                  <input style={inp} type="number" min="5" value={form.duration}
-                    onChange={e => setForm({...form, duration:+e.target.value})} />
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>
+                    Durée (minutes)
+                  </label>
+                  <input 
+                    style={inp} 
+                    type="number" 
+                    min="5" 
+                    step="5"
+                    value={form.duration}
+                    onChange={e => setForm({...form, duration: +e.target.value})} 
+                  />
                 </div>
                 <div>
-                  <label style={{fontSize:11, fontWeight:700, color:'var(--text-3)', display:'block', marginBottom:4}}>Type</label>
-                  <select style={inp} value={form.type} onChange={e => setForm({...form, type:e.target.value})}>
-                    <option value="flexible">Flexible</option>
-                    <option value="fixe">Fixe</option>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>
+                    Type
+                  </label>
+                  <select style={inp} value={form.type} onChange={e => setForm({...form, type: e.target.value})}>
+                    <option value="flexible">🔄 Flexible (planification intelligente)</option>
+                    <option value="fixe">⏰ Fixe (horaire précis)</option>
                   </select>
                 </div>
               </div>
 
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
-                  <label style={{fontSize:11, fontWeight:700, color:'var(--text-3)', display:'block', marginBottom:4}}>Catégorie</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>
+                    Catégorie
+                  </label>
                   <select
                     style={inp}
                     value={form.category}
                     onChange={e => setForm({ ...form, category: e.target.value, icon: CATEGORY_ICONS[e.target.value] || form.icon })}
                   >
-                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={{fontSize:11, fontWeight:700, color:'var(--text-3)', display:'block', marginBottom:4}}>Priorité</label>
-                  <select style={inp} value={form.priority} onChange={e => setForm({...form, priority:+e.target.value})}>
-                    {PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>
+                    Priorité
+                  </label>
+                  <select style={inp} value={form.priority} onChange={e => setForm({...form, priority: +e.target.value})}>
+                    {PRIORITIES.map(p => (
+                      <option key={p.value} value={p.value}>
+                        {p.label} {p.value === 1 ? '🔴' : p.value === 2 ? '🟠' : '🟢'}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
 
               {form.type === 'fixe' && (
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   <div>
-                    <label style={{fontSize:11, fontWeight:700, color:'var(--text-3)', display:'block', marginBottom:4}}>Heure début</label>
-                    <input style={inp} type="time" value={form.startTime || ''} onChange={e => setForm({...form, startTime:e.target.value})} />
+                    <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>
+                      Heure début
+                    </label>
+                    <input style={inp} type="time" value={form.startTime || ''} onChange={e => setForm({...form, startTime: e.target.value})} />
                   </div>
                   <div>
-                    <label style={{fontSize:11, fontWeight:700, color:'var(--text-3)', display:'block', marginBottom:4}}>Heure fin</label>
-                    <input style={inp} type="time" value={form.endTime || ''} onChange={e => setForm({...form, endTime:e.target.value})} />
+                    <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>
+                      Heure fin
+                    </label>
+                    <input style={inp} type="time" value={form.endTime || ''} onChange={e => setForm({...form, endTime: e.target.value})} />
                   </div>
                 </div>
               )}
 
               <div>
-                <label style={{fontSize:11, fontWeight:700, color:'var(--text-3)', display:'block', marginBottom:6}}>
-                  Jours (vide = tous les jours)
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 8 }}>
+                  Jours de la semaine (vide = tous les jours)
                 </label>
-                <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {DAYS.map(d => (
-                    <button type="button" key={d} onClick={() => toggleDay(d)} style={{
-                      padding:'4px 10px', borderRadius:20, fontSize:11, fontWeight:700,
-                      background: form.days.includes(d) ? '#22c55e' : 'var(--bg-card2)',
-                      color: form.days.includes(d) ? '#fff' : 'var(--text-3)',
-                      border: form.days.includes(d) ? '1px solid #22c55e' : '1px solid var(--border)',
-                      transition:'all .15s',
-                    }}>
+                    <button 
+                      type="button" 
+                      key={d} 
+                      onClick={() => toggleDay(d)} 
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 12,
+                        fontSize: 13,
+                        fontWeight: 700,
+                        background: form.days.includes(d) ? '#22c55e' : '#f1f5f9',
+                        color: form.days.includes(d) ? '#fff' : '#64748b',
+                        border: form.days.includes(d) ? 'none' : '1px solid #e2e8f0',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
                       {DAY_LABELS[d]}
                     </button>
                   ))}
@@ -242,19 +475,60 @@ export default function Activities() {
               </div>
 
               <div>
-                <label style={{fontSize:11, fontWeight:700, color:'var(--text-3)', display:'block', marginBottom:4}}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>
                   Couleur
                 </label>
-                <input type="color" value={form.color} onChange={e => setForm({...form, color:e.target.value})}
-                  style={{ height:32, width:60, borderRadius:6, border:'1px solid var(--border)', cursor:'pointer' }} />
+                <input 
+                  type="color" 
+                  value={form.color} 
+                  onChange={e => setForm({...form, color: e.target.value})}
+                  style={{ 
+                    height: 40, 
+                    width: '100%', 
+                    borderRadius: 12, 
+                    border: '2px solid #e2e8f0', 
+                    cursor: 'pointer',
+                    padding: 4
+                  }} 
+                />
               </div>
 
-              <div style={{ display:'flex', gap:8, marginTop:8 }}>
-                <button type="submit" style={{ flex:1, padding:'10px', borderRadius:8, background:'#22c55e', color:'#fff', fontWeight:700, fontSize:13 }}>
+              <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                <button 
+                  type="submit" 
+                  style={{ 
+                    flex: 1, 
+                    padding: '12px', 
+                    borderRadius: 12, 
+                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                    color: '#fff', 
+                    fontWeight: 700, 
+                    fontSize: 14,
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8
+                  }}
+                >
+                  <Check size={16} />
                   {editing ? 'Enregistrer' : 'Ajouter'}
                 </button>
-                <button type="button" onClick={() => setShowForm(false)}
-                  style={{ padding:'10px 16px', borderRadius:8, background:'var(--bg-card2)', color:'var(--text-2)', fontWeight:700, fontSize:13 }}>
+                <button 
+                  type="button" 
+                  onClick={() => setShowForm(false)}
+                  style={{ 
+                    padding: '12px 24px', 
+                    borderRadius: 12, 
+                    background: '#f1f5f9', 
+                    color: '#64748b', 
+                    fontWeight: 700, 
+                    fontSize: 14,
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
                   Annuler
                 </button>
               </div>
@@ -265,64 +539,216 @@ export default function Activities() {
 
       {/* Activity list */}
       {loading ? (
-        <div style={{ textAlign:'center', padding:40, color:'var(--text-3)' }}>Chargement…</div>
-      ) : activities.length === 0 ? (
-        <div style={{ textAlign:'center', padding:60, color:'var(--text-3)' }}>
-          <div style={{ display:'flex', justifyContent:'center', marginBottom:12 }}>{renderLucideIcon('ClipboardList', 40, '#94a3b8')}</div>
-          <p>Aucune activité. Commence par en ajouter une !</p>
+        <div style={{ 
+          textAlign: 'center', 
+          padding: 80, 
+          background: '#fff',
+          borderRadius: 20,
+          border: '1px solid #e2e8f0'
+        }}>
+          <div style={{ 
+            width: 40, 
+            height: 40, 
+            border: '3px solid #e2e8f0', 
+            borderTopColor: '#22c55e', 
+            borderRadius: '50%', 
+            animation: 'spin 0.8s linear infinite',
+            margin: '0 auto 16px'
+          }} />
+          <p style={{ color: '#64748b' }}>Chargement de vos activités...</p>
+        </div>
+      ) : filteredActivities.length === 0 ? (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: 80, 
+          background: '#fff',
+          borderRadius: 20,
+          border: '1px solid #e2e8f0'
+        }}>
+          <div style={{ 
+            width: 64, 
+            height: 64, 
+            borderRadius: 32, 
+            background: '#f1f5f9', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            margin: '0 auto 16px'
+          }}>
+            {renderLucideIcon('ClipboardList', 32, '#94a3b8')}
+          </div>
+          <h3 style={{ fontSize: 16, fontWeight: 600, color: '#0f172a', marginBottom: 8 }}>
+            Aucune activité
+          </h3>
+          <p style={{ color: '#64748b', marginBottom: 20 }}>
+            Commencez par ajouter votre première activité !
+          </p>
+          <button
+            onClick={openNew}
+            style={{
+              padding: '10px 24px',
+              borderRadius: 12,
+              background: '#22c55e',
+              color: '#fff',
+              fontWeight: 600,
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            + Nouvelle activité
+          </button>
         </div>
       ) : (
-        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-          {activities.map((a) => {
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {filteredActivities.map((a) => {
             const prio = PRIORITIES.find(p => p.value === a.priority);
+            const categoryInfo = getCategoryInfo(a.category);
             return (
               <div key={a._id} style={{
-                background:'#fff', borderRadius:12, padding:'14px 16px',
-                border:'1px solid var(--border-light)', boxShadow:'var(--shadow)',
-                display:'flex', alignItems:'center', gap:12,
-                animation:'fadeIn .2s ease',
+                background: '#fff',
+                borderRadius: 16,
+                padding: '16px 20px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 16,
+                transition: 'all 0.3s'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.boxShadow = '0 8px 20px -8px rgba(0,0,0,0.1)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
+                e.currentTarget.style.transform = 'translateY(0)';
               }}>
+                {/* Barre de couleur */}
                 <div style={{
-                  width:10, height:10, borderRadius:'50%', flexShrink:0,
+                  width: 4,
+                  height: 40,
+                  borderRadius: 2,
                   background: a.color,
+                  flexShrink: 0
                 }} />
-                <span style={{ display:'flex', alignItems:'center' }}>
-                  {renderLucideIcon(a.icon || CATEGORY_ICONS[a.category], 18, '#334155')}
-                </span>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:14, fontWeight:700, color:'var(--text)' }}>{a.name}</div>
-                  <div style={{ fontSize:11, color:'var(--text-3)', display:'flex', gap:8, marginTop:2, flexWrap:'wrap' }}>
-                    <span>{a.duration} min</span>
-                    <span>•</span>
-                    <span>{a.category}</span>
-                    <span>•</span>
-                    <span style={{ color: prio?.color }}>{prio?.label}</span>
-                    {a.days.length > 0 && <><span>•</span><span>{a.days.join(', ')}</span></>}
+                
+                {/* Icône */}
+                <div style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 14,
+                  background: `${categoryInfo.color}15`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  {renderLucideIcon(a.icon || CATEGORY_ICONS[a.category], 22, categoryInfo.color)}
+                </div>
+                
+                {/* Infos */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: '#0f172a' }}>{a.name}</span>
+                    <span style={{
+                      fontSize: 10,
+                      padding: '2px 8px',
+                      borderRadius: 20,
+                      background: a.type === 'fixe' ? '#fef3c7' : '#f0fdf4',
+                      color: a.type === 'fixe' ? '#92400e' : '#166534',
+                      fontWeight: 600
+                    }}>
+                      {a.type === 'fixe' ? '⏰ Fixe' : '🔄 Flexible'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span style={{ fontSize: 12, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Clock size={12} /> {a.duration} min
+                    </span>
+                    <span style={{ fontSize: 12, color: prio?.color, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Flag size={12} /> {prio?.label}
+                    </span>
+                    {a.days.length > 0 && (
+                      <span style={{ fontSize: 12, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Calendar size={12} /> {a.days.map(d => DAY_LABELS[d]).join(', ')}
+                      </span>
+                    )}
                   </div>
                 </div>
-                <span style={{
-                  fontSize:10, padding:'3px 8px', borderRadius:20,
-                  background: a.type === 'fixe' ? '#fef3c7' : '#f0fdf4',
-                  color: a.type === 'fixe' ? '#92400e' : '#166534',
-                  fontWeight:700, flexShrink:0,
-                }}>
-                  {a.type}
-                </span>
-                <div style={{ display:'flex', gap:6, flexShrink:0 }}>
-                  <button onClick={() => edit(a)} style={{
-                    padding:'6px 12px', borderRadius:8,
-                    background:'var(--bg-card2)', color:'var(--text-2)', fontSize:11, fontWeight:700,
-                  }}>Modifier</button>
-                  <button onClick={() => del(a._id)} style={{
-                    padding:'6px 12px', borderRadius:8,
-                    background:'#fef2f2', color:'#ef4444', fontSize:11, fontWeight:700,
-                  }}>Supprimer</button>
+                
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                  <button 
+                    onClick={() => edit(a)} 
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 10,
+                      background: '#f1f5f9',
+                      color: '#475569',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = '#e2e8f0';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = '#f1f5f9';
+                    }}
+                  >
+                    <Edit2 size={14} /> Modifier
+                  </button>
+                  <button 
+                    onClick={() => del(a._id)} 
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 10,
+                      background: '#fef2f2',
+                      color: '#ef4444',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = '#fee2e2';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = '#fef2f2';
+                    }}
+                  >
+                    <Trash2 size={14} /> Supprimer
+                  </button>
                 </div>
               </div>
             );
           })}
         </div>
       )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

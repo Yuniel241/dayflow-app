@@ -1,5 +1,3 @@
-// C:\Users\axelm\Programmation\dayflow-app\server\models/Feedback.js
-
 const mongoose = require('mongoose');
 
 const feedbackSchema = new mongoose.Schema({

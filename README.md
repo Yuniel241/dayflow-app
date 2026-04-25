@@ -149,6 +149,16 @@ python main.py
 - Regénération dynamique du planning
 - Navigation semaine précédente/suivante
 
+### ⚙️ Paramètres utilisateur
+- Configuration des horaires quotidiens :
+  - **Réveil** — Heure de levée (structurant la routine matinale)
+  - **Coucher** — Heure de sommeil (fin de la journée planifiable)
+  - **Début cours** — Transport + début cours
+  - **Fin cours** — Fin des cours (bloque les créneaux fixes)
+  - **Arrivée à domicile** — Transport retour
+- **Impact** : ces paramètres bloquent automatiquement les créneaux fixes lors de la génération du planning
+- Accès : menu Paramètres ou `/dashboard/settings`
+
 ### ✅ Gestion des activités
 - Créer, modifier, supprimer des activités
 - Priorité : haute / moyenne / basse

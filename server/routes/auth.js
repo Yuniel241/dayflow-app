@@ -29,10 +29,10 @@ router.get('/me', protect, (req, res) => {
 // Update user settings
 router.put('/settings', protect, async (req, res) => {
   try {
-    const { wakeUpTime, sleepTime, courseEndTime, arrivalTime } = req.body;
+    const { wakeUpTime, sleepTime, courseStartTime, courseEndTime, arrivalTime } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { wakeUpTime, sleepTime, courseEndTime, arrivalTime },
+      { wakeUpTime, sleepTime, courseStartTime, courseEndTime, arrivalTime },
       { new: true }
     );
     res.json({ success: true, user });

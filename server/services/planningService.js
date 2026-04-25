@@ -118,6 +118,7 @@ const placementScore = (activity, slotStart, slotDuration) => {
 const getFixedBlocks = (user, isWeekend) => {
   const wakeMin = timeToMin(user.wakeUpTime || '05:00');
   const sleepMin = timeToMin(user.sleepTime || '22:00');
+  const courseStartMin = timeToMin(user.courseStartTime || '06:00');
   const courseEndMin = timeToMin(user.courseEndTime || '18:00');
   const arrivalMin = timeToMin(user.arrivalTime || '20:30');
 
@@ -128,8 +129,7 @@ const getFixedBlocks = (user, isWeekend) => {
   ];
 
   if (!isWeekend) {
-    const departMin = wakeMin + 60;
-    blocks.push({ start: departMin, end: courseEndMin, label: 'Cours + transport' });
+    blocks.push({ start: courseStartMin, end: courseEndMin, label: 'Cours' });
     blocks.push({ start: courseEndMin, end: arrivalMin, label: 'Transport retour' });
   }
 

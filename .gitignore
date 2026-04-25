@@ -2,6 +2,7 @@ node_modules/
 .env
 dist/
 build/
+test/
 .DS_Store
 *.log
 Planification.docx

@@ -7,6 +7,7 @@ import AuthCallback from './pages/AuthCallback';
 import Dashboard from './pages/Dashboard';
 import Activities from './pages/Activities';
 import Stats from './pages/Stats';
+import Settings from './pages/Settings';
 import Layout from './components/Layout';
 import { Leaf } from 'lucide-react';
 
@@ -28,6 +29,7 @@ export default function App() {
             <Route index element={<Dashboard />} />
             <Route path="activities" element={<Activities />} />
             <Route path="stats" element={<Stats />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>
       </BrowserRouter>

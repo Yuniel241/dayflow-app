@@ -1,5 +1,3 @@
-// C:\Users\axelm\Programmation\dayflow-app\server\models/PlanningCache.js
-
 const mongoose = require('mongoose');
 
 const planningCacheSchema = new mongoose.Schema({
