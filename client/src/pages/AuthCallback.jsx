@@ -23,8 +23,28 @@ export default function AuthCallback() {
   }, []);
 
   return (
-    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh' }}>
-      <Leaf size={32} color="#16a34a" />
+    <div style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%)',
+      padding: '20px',
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ animation: 'spin 2s linear infinite', display: 'inline-block' }}>
+          <Leaf size={40} color="#16a34a" />
+        </div>
+        <p style={{ marginTop: 16, color: '#166534', fontSize: 14, fontWeight: 600 }}>
+          Vérification en cours...
+        </p>
+        <style>{`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
     </div>
   );
 }

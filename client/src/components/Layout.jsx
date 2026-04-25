@@ -6,7 +6,7 @@ import Avatar from './Avatar';
 import {
   CalendarDays, ListChecks, BarChart2, Settings,
   LogOut, PanelLeftClose, PanelLeftOpen, Zap,
-  Sparkles, Heart,
+  Sparkles, Heart, Menu, X,
 } from 'lucide-react';
 
 const NAV = [
@@ -22,6 +22,14 @@ export default function Layout() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,73 +44,76 @@ export default function Layout() {
   const currentPage = NAV.find(item => item.to === location.pathname);
   const pageTitle = currentPage?.label || 'Tableau de bord';
 
+  const isMobile = windowWidth < 768;
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)' }}>
-      {/* Sidebar */}
-      <aside style={{
-        width: collapsed ? 72 : 260,
-        transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        background: '#fff',
-        borderRight: '1px solid #e2e8f0',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '0 0 0 1px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.03)',
-        position: 'sticky',
-        top: 0,
-        height: '100vh',
-        flexShrink: 0,
-        zIndex: 50,
-      }}>
-        {/* Logo Section */}
-        <div style={{
-          padding: collapsed ? '16px' : '16px 20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          overflow: 'hidden',
-          borderBottom: '1px solid #f1f5f9',
-          marginBottom: 20,
-        }}>
-          <img
-            src={logo}
-            alt="DayFlow"
-            style={{
-              width: 50,
-              height: 50,
-              borderRadius: 10,
-              objectFit: 'contain',
-              flexShrink: 0,
-              // Le logo a un fond noir — on le retire proprement
-              background: '#fff',
-              padding: 2,
-            }}
-          />
-          {!collapsed && (
-            <div>
-              <span style={{
-                fontSize: 18,
-                fontWeight: 800,
-                background: 'linear-gradient(135deg, #166534, #22c55e)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                letterSpacing: -0.3,
-              }}>DayFlow</span>
-              <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 1, letterSpacing: 1 }}>
-                PLAN · FOCUS · GROW
-              </div>
-            </div>
-          )}
-        </div>
-
-
-        {/* Navigation */}
-        <nav style={{
-          flex: 1,
-          padding: '0 12px',
+      {/* Sidebar - Hidden on mobile */}
+      {!isMobile && (
+        <aside style={{
+          width: collapsed ? 72 : 260,
+          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          background: '#fff',
+          borderRight: '1px solid #e2e8f0',
           display: 'flex',
           flexDirection: 'column',
-          gap: 4,
+          boxShadow: '0 0 0 1px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.03)',
+          position: 'sticky',
+          top: 0,
+          height: '100vh',
+          flexShrink: 0,
+          zIndex: 50,
         }}>
+          {/* Logo Section */}
+          <div style={{
+            padding: collapsed ? '16px' : '16px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            overflow: 'hidden',
+            borderBottom: '1px solid #f1f5f9',
+            marginBottom: 20,
+          }}>
+            <img
+              src={logo}
+              alt="DayFlow"
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: 10,
+                objectFit: 'contain',
+                flexShrink: 0,
+                background: '#fff',
+                padding: 2,
+              }}
+            />
+            {!collapsed && (
+              <div>
+                <span style={{
+                  fontSize: 18,
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #166534, #22c55e)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  letterSpacing: -0.3,
+                }}>DayFlow</span>
+                <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 1, letterSpacing: 1 }}>
+                  PLAN · FOCUS · GROW
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Navigation */}
+          <nav style={{
+            flex: 1,
+            padding: '0 12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+          }}>
           {NAV.map(({ to, icon: Icon, label, description }) => (
             <NavLink
               key={to}
@@ -271,6 +282,171 @@ export default function Layout() {
           </button>
         </div>
       </aside>
+      )}
+
+      {/* Mobile Menu Overlay */}
+      {isMobile && mobileMenuOpen && (
+        <>
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.4)',
+              zIndex: 39,
+            }}
+            onClick={closeMobileMenu}
+          />
+          <nav style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            width: '280px',
+            background: '#fff',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+            zIndex: 50,
+            display: 'flex',
+            flexDirection: 'column',
+            overflowY: 'auto',
+            animation: 'slideIn 0.3s ease-out',
+          }}>
+            {/* Logo */}
+            <div style={{
+              padding: '16px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              borderBottom: '1px solid #f1f5f9',
+              marginBottom: 20,
+            }}>
+              <img
+                src={logo}
+                alt="DayFlow"
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 10,
+                  objectFit: 'contain',
+                  background: '#fff',
+                  padding: 2,
+                }}
+              />
+              <div>
+                <div style={{
+                  fontSize: 16,
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #166534, #22c55e)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}>DayFlow</div>
+                <div style={{ fontSize: 9, color: '#94a3b8', letterSpacing: 1 }}>
+                  PLAN · FOCUS · GROW
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Nav Links */}
+            <div style={{ flex: 1, padding: '0 12px' }}>
+              {NAV.map(({ to, icon: Icon, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={to === '/dashboard'}
+                  onClick={closeMobileMenu}
+                  style={({ isActive }) => ({
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '12px 14px',
+                    borderRadius: 12,
+                    fontWeight: isActive ? 600 : 500,
+                    fontSize: 14,
+                    color: isActive ? '#22c55e' : '#64748b',
+                    background: isActive ? '#f0fdf4' : 'transparent',
+                    transition: 'all 0.2s',
+                    textDecoration: 'none',
+                    marginBottom: 4,
+                  })}
+                >
+                  {({ isActive }) => (
+                    <>
+                      <Icon size={18} />
+                      <span>{label}</span>
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+
+            {/* Mobile User Section */}
+            {user && (
+              <div style={{
+                padding: '12px',
+                borderTop: '1px solid #f1f5f9',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '12px',
+                  borderRadius: 12,
+                  background: '#f8fafc',
+                }}>
+                  <Avatar user={user} size={32} />
+                  <div style={{ overflow: 'hidden', flex: 1 }}>
+                    <div style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: '#0f172a',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}>
+                      {user.name}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { handleLogout(); closeMobileMenu(); }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: 10,
+                    background: 'transparent',
+                    color: '#ef4444',
+                    fontSize: 13,
+                    fontWeight: 500,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    cursor: 'pointer',
+                    border: 'none',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <LogOut size={16} />
+                  Déconnexion
+                </button>
+              </div>
+            )}
+
+            <style>{`
+              @keyframes slideIn {
+                from { transform: translateX(-100%); }
+                to { transform: translateX(0); }
+              }
+            `}</style>
+          </nav>
+        </>
+      )}
 
       {/* Main Content */}
       <main style={{
@@ -286,11 +462,13 @@ export default function Layout() {
           zIndex: 40,
           background: scrolled ? 'rgba(255,255,255,0.95)' : 'transparent',
           backdropFilter: scrolled ? 'blur(12px)' : 'none',
-          padding: scrolled ? '12px 24px' : '24px 32px',
+          padding: isMobile 
+            ? (scrolled ? '12px 16px' : '16px 16px') 
+            : (scrolled ? '12px 24px' : '24px 32px'),
           borderBottom: scrolled ? '1px solid rgba(226, 232, 240, 0.5)' : 'none',
-          borderRadius: scrolled ? 60 : 0,
-          maxWidth: scrolled ? 'calc(100% - 32px)' : '100%',
-          margin: scrolled ? '0 16px' : '0',
+          borderRadius: scrolled ? (isMobile ? 0 : 60) : 0,
+          maxWidth: scrolled ? (isMobile ? '100%' : 'calc(100% - 32px)') : '100%',
+          margin: scrolled ? (isMobile ? '0' : '0 16px') : '0',
           transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
           boxShadow: scrolled ? '0 10px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.02)' : 'none',
         }}>
@@ -298,12 +476,37 @@ export default function Layout() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 16
+            flexWrap: isMobile ? 'nowrap' : 'wrap',
+            gap: isMobile ? 12 : 16,
           }}>
-            <div>
+            {/* Mobile Hamburger Button */}
+            {isMobile && (
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 8,
+                  transition: 'all 0.2s',
+                  color: '#0f172a',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
+                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            )}
+
+            <div style={{ flex: 1, minWidth: 0 }}>
               <h1 style={{
-                fontSize: scrolled ? 20 : 28,
+                fontSize: isMobile 
+                  ? (scrolled ? 18 : 20)
+                  : (scrolled ? 20 : 28),
                 fontWeight: 800,
                 background: 'linear-gradient(135deg, #0f172a, #1e293b)',
                 WebkitBackgroundClip: 'text',
@@ -311,11 +514,14 @@ export default function Layout() {
                 margin: 0,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 10,
-                transition: 'font-size 0.3s ease'
+                gap: isMobile ? 6 : 10,
+                transition: 'font-size 0.3s ease',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}>
                 {pageTitle}
-                {pageTitle === 'Tableau de bord' && (
+                {pageTitle === 'Tableau de bord' && !isMobile && (
                   <span style={{
                     fontSize: 24,
                     animation: 'wave 1.5s ease-in-out infinite',
@@ -325,75 +531,85 @@ export default function Layout() {
                   </span>
                 )}
               </h1>
-              <p style={{
-                fontSize: 13,
-                color: '#64748b',
-                marginTop: 6,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                flexWrap: 'wrap'
-              }}>
-                Content de te revoir, {user?.name?.split(' ')[0] || 'Ami'}
-                <Heart 
-                  size={14} 
-                  fill="#ef4444"
-                  color="#ef4444"
-                  style={{ 
-                    animation: 'heartBeat 1.5s ease-in-out infinite',
-                    filter: 'drop-shadow(0 0 2px rgba(239, 68, 68, 0.3))',
-                    transformOrigin: 'center'
-                  }} 
-                />
-                <span style={{ fontSize: 12, color: '#94a3b8' }}>
-                  {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              </p>
+              {!isMobile && (
+                <p style={{
+                  fontSize: 13,
+                  color: '#64748b',
+                  marginTop: 6,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  flexWrap: 'wrap'
+                }}>
+                  Content de te revoir, {user?.name?.split(' ')[0] || 'Ami'}
+                  <Heart 
+                    size={14} 
+                    fill="#ef4444"
+                    color="#ef4444"
+                    style={{ 
+                      animation: 'heartBeat 1.5s ease-in-out infinite',
+                      filter: 'drop-shadow(0 0 2px rgba(239, 68, 68, 0.3))',
+                      transformOrigin: 'center'
+                    }} 
+                  />
+                  <span style={{ fontSize: 12, color: '#94a3b8' }}>
+                    {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </p>
+              )}
             </div>
             
-            {/* Pilule Énergie */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              background: '#f0fdf4',
-              padding: scrolled ? '8px 16px' : '10px 20px',
-              borderRadius: 50,
-              border: '1px solid #d1fae5',
-              transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-              cursor: 'pointer',
-              boxShadow: '0 1px 2px rgba(34, 197, 94, 0.1)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.background = '#dcfce7';
-              e.currentTarget.style.borderColor = '#86efac';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.background = '#f0fdf4';
-              e.currentTarget.style.borderColor = '#d1fae5';
-            }}
-            onClick={() => {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}>
-              <Sparkles size={16} color="#22c55e" strokeWidth={2.5} style={{ animation: 'sparkle 2s ease-in-out infinite' }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#166534' }}>
-                {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
-              </span>
+            {/* Pilule Énergie - Hidden on mobile */}
+            {!isMobile && (
               <div style={{
-                width: 6,
-                height: 6,
-                borderRadius: '50%',
-                background: '#22c55e',
-                animation: 'pulse 2s ease-in-out infinite'
-              }} />
-            </div>
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                background: '#f0fdf4',
+                padding: scrolled ? '8px 16px' : '10px 20px',
+                borderRadius: 50,
+                border: '1px solid #d1fae5',
+                transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                cursor: 'pointer',
+                boxShadow: '0 1px 2px rgba(34, 197, 94, 0.1)',
+                flexShrink: 0,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.background = '#dcfce7';
+                e.currentTarget.style.borderColor = '#86efac';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.background = '#f0fdf4';
+                e.currentTarget.style.borderColor = '#d1fae5';
+              }}
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}>
+                <Sparkles size={16} color="#22c55e" strokeWidth={2.5} style={{ animation: 'sparkle 2s ease-in-out infinite' }} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#166534' }}>
+                  {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                </span>
+                <div style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  background: '#22c55e',
+                  animation: 'pulse 2s ease-in-out infinite'
+                }} />
+              </div>
+            )}
           </div>
         </header>
 
         {/* Page Content */}
-        <div style={{ padding: '24px 32px', flex: 1 }}>
+        <div style={{ 
+          padding: isMobile ? '16px 12px' : '24px 32px', 
+          flex: 1,
+          maxWidth: '100%',
+          overflowX: 'hidden',
+        }}>
           <Outlet />
         </div>
       </main>

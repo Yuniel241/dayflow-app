@@ -74,7 +74,15 @@ export default function Landing() {
   const [verse, setVerse] = useState(null);
   const [encouragement, setEncouragement] = useState('');
   const [scrolled, setScrolled] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const heroRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (user) { navigate('/dashboard'); return; }
@@ -96,6 +104,9 @@ export default function Landing() {
     }
   };
 
+  const isMobile = windowWidth < 768;
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -114,8 +125,8 @@ export default function Landing() {
         background: scrolled ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.85)',
         backdropFilter: 'blur(20px)',
         borderBottom: scrolled ? '1px solid rgba(34,197,94,0.1)' : '1px solid #e2e8f0',
-        padding: '0 5%',
-        height: 70,
+        padding: isMobile ? '0 12px' : '0 5%',
+        height: isMobile ? 56 : 70,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -125,95 +136,205 @@ export default function Landing() {
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
-          gap: 12,
+          gap: isMobile ? 8 : 12,
           cursor: 'pointer'
         }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <img
             src={logo}
             alt="DayFlow"
             style={{
-              width: 40,
-              height: 40,
+              width: isMobile ? 32 : 40,
+              height: isMobile ? 32 : 40,
               objectFit: 'contain',
               borderRadius: 10,
             }}
           />
-          <span style={{ 
-            fontSize: 20, 
-            fontWeight: 800, 
-            background: 'linear-gradient(135deg, #166534, #22c55e)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>DayFlow</span>
+          {!isMobile && (
+            <span style={{ 
+              fontSize: 20, 
+              fontWeight: 800, 
+              background: 'linear-gradient(135deg, #166534, #22c55e)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}>DayFlow</span>
+          )}
         </div>
         
-        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+        {/* Mobile Menu Button */}
+        {isMobile && (
           <button
-            onClick={scrollToFeatures}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             style={{
               background: 'transparent',
               border: 'none',
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#475569',
               cursor: 'pointer',
-              padding: '8px 16px',
-              borderRadius: 20,
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = '#f0fdf4';
-              e.currentTarget.style.color = '#166534';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = '#475569';
-            }}
-          >
-            Fonctionnalités
-          </button>
-          <button
-            onClick={() => navigate('/login')}
-            style={{
-              padding: '10px 24px',
-              borderRadius: 40,
-              background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-              color: '#fff',
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: 'pointer',
+              padding: '8px',
               display: 'flex',
               alignItems: 'center',
-              gap: 8,
-              border: 'none',
-              transition: 'all 0.3s',
-              boxShadow: '0 2px 8px rgba(34,197,94,0.3)'
+              justifyContent: 'center',
+              borderRadius: 8,
+              transition: 'all 0.2s',
+              color: '#0f172a',
             }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(34,197,94,0.4)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(34,197,94,0.3)';
-            }}
+            onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
-            Commencer <ArrowRight size={16} />
+            {mobileMenuOpen ? (
+              <svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            ) : (
+              <svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="18" x2="20" y2="18" />
+              </svg>
+            )}
           </button>
-        </div>
+        )}
+        
+        {/* Desktop Navigation */}
+        {!isMobile && (
+          <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+            <button
+              onClick={scrollToFeatures}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontSize: 14,
+                fontWeight: 600,
+                color: '#475569',
+                cursor: 'pointer',
+                padding: '8px 16px',
+                borderRadius: 20,
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = '#f0fdf4';
+                e.currentTarget.style.color = '#166534';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = '#475569';
+              }}
+            >
+              Fonctionnalités
+            </button>
+            <button
+              onClick={() => navigate('/login')}
+              style={{
+                padding: '10px 24px',
+                borderRadius: 40,
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: 14,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                border: 'none',
+                transition: 'all 0.3s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              Se connecter
+              <ArrowRight size={16} strokeWidth={3} />
+            </button>
+          </div>
+        )}
       </nav>
+
+      {/* Mobile Menu */}
+      {isMobile && mobileMenuOpen && (
+        <>
+          <div 
+            style={{
+              position: 'fixed',
+              top: 56,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.3)',
+              zIndex: 39,
+            }}
+            onClick={closeMobileMenu}
+          />
+          <div style={{
+            position: 'fixed',
+            top: 56,
+            left: 0,
+            right: 0,
+            background: '#fff',
+            borderBottom: '1px solid #e2e8f0',
+            zIndex: 50,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            padding: '12px',
+          }}>
+            <button
+              onClick={() => { scrollToFeatures(); closeMobileMenu(); }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontSize: 14,
+                fontWeight: 600,
+                color: '#475569',
+                cursor: 'pointer',
+                padding: '12px 16px',
+                borderRadius: 8,
+                transition: 'all 0.2s',
+                textAlign: 'left',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = '#f0fdf4';
+                e.currentTarget.style.color = '#166534';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = '#475569';
+              }}
+            >
+              Fonctionnalités
+            </button>
+            <button
+              onClick={() => { navigate('/login'); closeMobileMenu(); }}
+              style={{
+                padding: '12px 16px',
+                borderRadius: 8,
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: 14,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                border: 'none',
+                width: '100%',
+              }}
+            >
+              Se connecter
+              <ArrowRight size={16} strokeWidth={3} />
+            </button>
+          </div>
+        </>
+      )}
 
       {/* Hero Section */}
       <section style={{
         maxWidth: 1200,
         margin: '0 auto',
-        padding: '140px 5% 80px',
+        padding: isMobile ? '100px 12px 60px' : '140px 5% 80px',
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 60,
+        gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+        gap: isMobile ? 40 : 60,
         alignItems: 'center',
-        minHeight: '90vh'
+        minHeight: isMobile ? 'auto' : '90vh'
       }}>
         {/* Left side */}
         <div>
@@ -224,67 +345,74 @@ export default function Landing() {
             background: '#f0fdf4',
             border: '1px solid #bbf7d0',
             borderRadius: 40,
-            padding: '8px 20px',
-            marginBottom: 32,
-            animation: 'slideInLeft 0.6s ease-out'
+            padding: '8px 16px',
+            marginBottom: isMobile ? 20 : 32,
+            animation: 'slideInLeft 0.6s ease-out',
+            fontSize: isMobile ? 11 : 13,
           }}>
-            <Sparkles size={16} color="#22c55e" />
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#16a34a' }}>
-              Planification intelligente pour étudiants
+            <Sparkles size={isMobile ? 14 : 16} color="#22c55e" />
+            <span style={{ fontWeight: 700, color: '#16a34a', whiteSpace: 'nowrap' }}>
+              {isMobile ? 'Planning intelligent' : 'Planification intelligente pour étudiants'}
             </span>
           </div>
 
           <h1 style={{
-            fontSize: 'clamp(40px, 5vw, 64px)',
+            fontSize: isMobile ? 32 : 'clamp(40px, 5vw, 64px)',
             fontWeight: 800,
             color: '#0f172a',
             lineHeight: 1.2,
-            marginBottom: 24,
+            marginBottom: isMobile ? 16 : 24,
             animation: 'slideInLeft 0.6s ease-out 0.1s both'
           }}>
             Transforme ton quotidien
-            <br />
+            {!isMobile && <br />}
             <span style={{ 
               background: 'linear-gradient(135deg, #22c55e, #16a34a, #15803d)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
-            }}>en journées accomplies</span>
+            }}>
+              {isMobile ? ' en journées accomplies' : 'en journées accomplies'}
+            </span>
           </h1>
 
           <p style={{
-            fontSize: 18,
+            fontSize: isMobile ? 14 : 18,
             color: '#475569',
-            lineHeight: 1.7,
-            marginBottom: 40,
+            lineHeight: 1.6,
+            marginBottom: isMobile ? 24 : 40,
             animation: 'slideInLeft 0.6s ease-out 0.2s both'
           }}>
-            DayFlow analyse tes contraintes réelles — cours, transport, sommeil —
-            et génère automatiquement un planning hebdomadaire adapté à ta vie.
+            {isMobile 
+              ? 'DayFlow génère un planning adapté à tes cours, transport et sommeil.'
+              : 'DayFlow analyse tes contraintes réelles — cours, transport, sommeil — et génère automatiquement un planning hebdomadaire adapté à ta vie.'
+            }
           </p>
 
           <div style={{ 
             display: 'flex', 
-            gap: 16, 
+            gap: isMobile ? 12 : 16, 
             flexWrap: 'wrap',
             animation: 'slideInLeft 0.6s ease-out 0.3s both'
           }}>
             <button
               onClick={() => navigate('/login')}
               style={{
-                padding: '16px 32px',
+                padding: isMobile ? '12px 24px' : '16px 32px',
                 borderRadius: 16,
                 background: 'linear-gradient(135deg, #22c55e, #16a34a)',
                 color: '#fff',
                 fontWeight: 800,
-                fontSize: 16,
+                fontSize: isMobile ? 14 : 16,
                 cursor: 'pointer',
                 border: 'none',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 10,
                 boxShadow: '0 8px 25px rgba(34,197,94,0.35)',
-                transition: 'all 0.3s'
+                transition: 'all 0.3s',
+                flex: isMobile ? '1 1 100%' : 'auto',
+                justifyContent: isMobile ? 'center' : 'flex-start',
               }}
               onMouseEnter={e => {
                 e.currentTarget.style.transform = 'translateY(-3px)';
@@ -301,19 +429,21 @@ export default function Landing() {
             <button
               onClick={scrollToFeatures}
               style={{
-                padding: '16px 32px',
+                padding: isMobile ? '12px 24px' : '16px 32px',
                 borderRadius: 16,
                 background: '#fff',
                 color: '#16a34a',
                 fontWeight: 700,
-                fontSize: 16,
+                fontSize: isMobile ? 14 : 16,
                 cursor: 'pointer',
                 border: '2px solid #22c55e',
-                transition: 'all 0.3s'
+                transition: 'all 0.3s',
+                flex: isMobile ? '1 1 100%' : 'auto',
+                textAlign: 'center',
               }}
               onMouseEnter={e => {
                 e.currentTarget.style.background = '#f0fdf4';
-                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.transform = isMobile ? 'translateY(0)' : 'translateY(-2px)';
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.background = '#fff';
@@ -325,60 +455,64 @@ export default function Landing() {
           </div>
 
           {/* Stats */}
-          <div style={{
-            display: 'flex',
-            gap: 40,
-            marginTop: 60,
-            paddingTop: 40,
-            borderTop: '2px solid #e2e8f0',
-            animation: 'slideInLeft 0.6s ease-out 0.4s both'
-          }}>
-            <div>
-              <div style={{ fontSize: 32, fontWeight: 800, color: '#22c55e' }}>500+</div>
-              <div style={{ fontSize: 14, color: '#64748b' }}>Étudiants actifs</div>
+          {!isMobile && (
+            <div style={{
+              display: 'flex',
+              gap: 40,
+              marginTop: 60,
+              paddingTop: 40,
+              borderTop: '2px solid #e2e8f0',
+              animation: 'slideInLeft 0.6s ease-out 0.4s both'
+            }}>
+              <div>
+                <div style={{ fontSize: 32, fontWeight: 800, color: '#22c55e' }}>500+</div>
+                <div style={{ fontSize: 14, color: '#64748b' }}>Étudiants actifs</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 32, fontWeight: 800, color: '#22c55e' }}>92%</div>
+                <div style={{ fontSize: 14, color: '#64748b' }}>de satisfaction</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 32, fontWeight: 800, color: '#22c55e' }}>15k+</div>
+                <div style={{ fontSize: 14, color: '#64748b' }}>Heures économisées</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize: 32, fontWeight: 800, color: '#22c55e' }}>92%</div>
-              <div style={{ fontSize: 14, color: '#64748b' }}>de satisfaction</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 32, fontWeight: 800, color: '#22c55e' }}>15k+</div>
-              <div style={{ fontSize: 14, color: '#64748b' }}>Heures économisées</div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Right side - Lottie */}
-        <div style={{
-          animation: 'slideInRight 0.8s ease-out',
-          position: 'relative'
-        }}>
+        {!isMobile && (
           <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '120%',
-            height: '120%',
-            background: 'radial-gradient(circle, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0) 70%)',
-            borderRadius: '50%',
-            zIndex: 0
-          }} />
-          <Lottie 
-            animationData={animationData} 
-            loop={true}
-            style={{ width: '100%', height: 'auto', position: 'relative', zIndex: 1 }}
-          />
-        </div>
+            animation: 'slideInRight 0.8s ease-out',
+            position: 'relative'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '120%',
+              height: '120%',
+              background: 'radial-gradient(circle, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0) 70%)',
+              borderRadius: '50%',
+              zIndex: 0
+            }} />
+            <Lottie 
+              animationData={animationData} 
+              loop={true}
+              style={{ width: '100%', height: 'auto', position: 'relative', zIndex: 1 }}
+            />
+          </div>
+        )}
       </section>
 
       {/* Verset du jour */}
       {verse && (
-        <section style={{ maxWidth: 900, margin: '0 auto 80px', padding: '0 5%' }}>
+        <section style={{ maxWidth: 900, margin: '0 auto 80px', padding: isMobile ? '0 12px' : '0 5%' }}>
           <div style={{
             background: 'linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%)',
             borderRadius: 28,
-            padding: '40px 48px',
+            padding: isMobile ? '32px 20px' : '40px 48px',
             position: 'relative',
             overflow: 'hidden',
             boxShadow: '0 20px 40px -12px rgba(0,0,0,0.2)',

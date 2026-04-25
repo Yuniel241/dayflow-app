@@ -13,6 +13,17 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
   const [mlStats, setMlStats] = useState(null);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth < 640;
+  const isTablet = windowWidth < 1024;
+
   const [formData, setFormData] = useState({
     wakeUpTime: '05:00',
     sleepTime: '22:00',
@@ -156,7 +167,12 @@ export default function Settings() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 32, alignItems: 'start' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr' : '1fr 340px', 
+        gap: isMobile ? 24 : isTablet ? 24 : 32, 
+        alignItems: 'start' 
+      }}>
         {/* Formulaire principal */}
         <form onSubmit={handleSave}>
           {message && (
@@ -202,7 +218,7 @@ export default function Settings() {
               </h2>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 24 }}>
               {/* Réveil */}
               <div>
                 <label style={{ 

@@ -3,7 +3,7 @@ import { CheckSquare, Square, Clock } from 'lucide-react';
 import DonutChart from './DonutChart';
 import { getDayShort, formatDate, isToday } from '../utils/dates';
 
-export default function DayColumn({ day, onToggleSlot }) {
+export default function DayColumn({ day, onToggleSlot, isMobile }) {
   const total = day.slots.length;
   const done = day.slots.filter((s) => s.done).length;
   const rate = total > 0 ? Math.round((done / total) * 100) : 0;
@@ -22,28 +22,30 @@ export default function DayColumn({ day, onToggleSlot }) {
       overflow: 'hidden',
       display: 'flex', flexDirection: 'column',
       boxShadow: today ? '0 4px 16px rgba(34,197,94,0.15)' : 'var(--shadow)',
-      minWidth: 0,
+      minWidth: isMobile ? 'calc(100vw - 40px)' : 0,
+      flex: isMobile ? '0 0 auto' : '1',
     }}>
 
       {/* ── Header ── */}
       <div style={{
         background: today ? '#22c55e' : '#4a7c59',
-        padding: '10px 12px',
+        padding: isMobile ? '8px 12px' : '10px 12px',
         textAlign: 'center',
       }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', letterSpacing: 1 }}>
-          {getDayShort(day.date)}
+        <div style={{ fontSize: isMobile ? 12 : 13, fontWeight: 800, color: '#fff', letterSpacing: 1 }}>
+          {isMobile ? getDayShort(day.date).slice(0, 3) : getDayShort(day.date)}
           {today && (
             <span style={{
-              marginLeft: 6, fontSize: 9,
+              marginLeft: 6, fontSize: isMobile ? 8 : 9,
               background: 'rgba(255,255,255,0.3)',
               padding: '1px 6px', borderRadius: 20,
+              display: isMobile ? 'none' : 'inline-block',
             }}>
               Aujourd'hui
             </span>
           )}
         </div>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', marginTop: 1 }}>
+        <div style={{ fontSize: isMobile ? 10 : 11, color: 'rgba(255,255,255,0.8)', marginTop: 1 }}>
           {formatDate(day.date)}
         </div>
       </div>

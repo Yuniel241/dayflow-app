@@ -49,7 +49,7 @@ button {
   outline: none;
 }
 
-input, textarea {
+input, textarea, select {
   font-family: inherit;
   outline: none;
 }
@@ -69,3 +69,54 @@ input, textarea {
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
 
 .fade-in { animation: fadeIn .3s ease forwards; }
+
+/* ─────────────────────────────────────── RESPONSIVE ─────────────────────────────────────── */
+
+/* Desktop: default */
+@media (max-width: 1920px) {
+  html { font-size: 16px; }
+}
+
+/* Large tablets / Small desktops */
+@media (max-width: 1366px) {
+  html { font-size: 15px; }
+}
+
+/* Tablets / Medium screens */
+@media (max-width: 1024px) {
+  html { font-size: 14.5px; }
+}
+
+/* Small tablets / Large phones */
+@media (max-width: 768px) {
+  html { font-size: 14px; }
+  
+  main { padding: 16px !important; }
+}
+
+/* Phones */
+@media (max-width: 640px) {
+  html { font-size: 13.5px; }
+  
+  main { padding: 12px !important; }
+  
+  h1 { font-size: 24px !important; }
+  h2 { font-size: 18px !important; }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  html { font-size: 13px; }
+  
+  main { padding: 8px !important; }
+  
+  h1 { font-size: 20px !important; }
+  h2 { font-size: 16px !important; }
+}
+
+/* Extra small phones */
+@media (max-width: 360px) {
+  html { font-size: 12px; }
+  
+  main { padding: 8px !important; }
+}

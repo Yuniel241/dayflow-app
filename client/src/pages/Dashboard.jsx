@@ -61,32 +61,55 @@ export default function Dashboard() {
   const monthLabel = today.toLocaleDateString('fr-FR', { month: 'long' }).toUpperCase();
   const year = today.getFullYear();
 
+  // Breakpoint detection
+  const [windowWidth, setWindowWidth] = React.useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  React.useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth < 768;
+  const isTablet = windowWidth < 1024;
+
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:16, animation:'fadeIn .3s ease' }}>
 
-      {/* Top row: Calendar info + Chart + Insights + Score */}
-      <div style={{ display:'grid', gridTemplateColumns:'200px 1fr 160px 140px', gap:12 }}>
+      {/* Top row: Responsive grid layout */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : '200px 1fr 160px 140px',
+        gap: 12,
+        width: '100%',
+      }}>
 
         {/* Calendar settings */}
         <div style={{
           background:'#4a7c59', borderRadius:14, padding:'16px',
           display:'flex', flexDirection:'column', justifyContent:'space-between',
           boxShadow:'var(--shadow-md)',
+          order: isMobile ? 2 : 0,
         }}>
           <div style={{ textAlign:'center' }}>
-            <div style={{ fontSize:18, fontWeight:800, color:'#fff', letterSpacing:1 }}>TASK TRACKER</div>
-            <div style={{ fontSize:13, color:'rgba(255,255,255,0.8)', marginBottom:12 }}>—{monthLabel}—</div>
+            <div style={{ fontSize: isMobile ? 14 : 18, fontWeight:800, color:'#fff', letterSpacing:1 }}>
+              {isMobile ? 'TASK' : 'TASK TRACKER'}
+            </div>
+            <div style={{ fontSize: isMobile ? 11 : 13, color:'rgba(255,255,255,0.8)', marginBottom:12 }}>
+              —{monthLabel}—
+            </div>
           </div>
           <div style={{ background:'rgba(255,255,255,0.15)', borderRadius:8, padding:'8px 12px' }}>
-            <div style={{ fontSize:10, fontWeight:700, color:'rgba(255,255,255,0.7)', marginBottom:6, letterSpacing:.5 }}>PARAMÈTRES</div>
+            <div style={{ fontSize:10, fontWeight:700, color:'rgba(255,255,255,0.7)', marginBottom:6, letterSpacing:.5 }}>
+              PARAMÈTRES
+            </div>
             {[
               ['ANNÉE', year],
               ['MOIS', monthLabel],
               ['SEMAINE', getWeekLabel(weekStart)],
             ].map(([k, v]) => (
               <div key={k} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4 }}>
-                <span style={{ fontSize:10, color:'rgba(255,255,255,0.7)', fontWeight:600 }}>{k}</span>
-                <span style={{ fontSize:10, color:'#fff', fontWeight:700 }}>{v}</span>
+                <span style={{ fontSize:9, color:'rgba(255,255,255,0.7)', fontWeight:600 }}>{k}</span>
+                <span style={{ fontSize:9, color:'#fff', fontWeight:700 }}>{v}</span>
               </div>
             ))}
           </div>
@@ -98,8 +121,8 @@ export default function Dashboard() {
             >‹</button>
             <button
               onClick={() => setWeekStart(getWeekStart())}
-              style={{ flex:2, padding:'6px', borderRadius:6, background:'rgba(255,255,255,0.2)', color:'#fff', fontSize:10, fontWeight:700 }}
-            >Aujourd'hui</button>
+              style={{ flex:2, padding:'6px', borderRadius:6, background:'rgba(255,255,255,0.2)', color:'#fff', fontSize: isMobile ? 9 : 10, fontWeight:700 }}
+            >{isMobile ? 'Auj' : 'Aujourd\'hui'}</button>
             <button
               onClick={() => setWeekStart(addWeeks(weekStart, 1))}
               style={{ flex:1, padding:'6px', borderRadius:6, background:'rgba(255,255,255,0.2)', color:'#fff', fontSize:13, fontWeight:700 }}
@@ -108,21 +131,23 @@ export default function Dashboard() {
         </div>
 
         {/* Bar chart */}
-        <WeekBarChart days={planning?.days || []} />
+        {!isMobile && <WeekBarChart days={planning?.days || []} />}
 
         {/* Insights */}
-        <WeekInsights planning={planning} />
+        {!isMobile && isTablet && <WeekInsights planning={planning} />}
+        {!isTablet && <WeekInsights planning={planning} />}
 
         {/* Productivity score large */}
         <div style={{
           background:'#fff', borderRadius:14, border:'1px solid var(--border-light)',
           padding:'16px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
           boxShadow:'var(--shadow)',
+          order: isMobile ? 1 : 0,
         }}>
           <div style={{ fontSize:10, fontWeight:700, color:'var(--text-3)', textTransform:'uppercase', letterSpacing:.5, marginBottom:8, textAlign:'center' }}>
-            Score hebdomadaire
+            Score
           </div>
-          <div style={{ fontSize:42, fontWeight:800, color:'#22c55e', fontFamily:'Space Mono, monospace' }}>
+          <div style={{ fontSize: isMobile ? 32 : 42, fontWeight:800, color:'#22c55e', fontFamily:'Space Mono, monospace' }}>
             {planning?.productivityScore ?? 0}%
           </div>
           <div style={{ width:'100%', marginTop:8, height:8, background:'var(--bg-card2)', borderRadius:4, overflow:'hidden' }}>
@@ -141,15 +166,18 @@ export default function Dashboard() {
               transition:'all .15s', width:'100%',
             }}
           >
-            <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+            <span style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize: isMobile ? '10px' : '11px' }}>
               {generating ? <Loader2 size={13} style={{ animation:'spin 1s linear infinite' }} /> : <RefreshCw size={13} />}
-              {generating ? 'Génération...' : 'Régénérer'}
+              {generating ? 'Gen...' : isMobile ? 'Régén' : 'Régénérer'}
             </span>
           </button>
         </div>
       </div>
 
-      {/* 7-day columns */}
+      {/* Bar chart for mobile/tablet (moved here for better UX) */}
+      {isMobile && <WeekBarChart days={planning?.days || []} />}
+
+      {/* 7-day columns - horizontally scrollable on mobile */}
       {loading ? (
         <div style={{ textAlign:'center', padding:'40px', color:'var(--text-3)', fontSize:24 }}>
           <span style={{ animation:'spin 1s linear infinite', display:'inline-flex' }}>
@@ -157,9 +185,27 @@ export default function Dashboard() {
           </span>
         </div>
       ) : (
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:8 }}>
+        <div style={{
+          display: isMobile ? 'flex' : 'grid',
+          gridTemplateColumns: isMobile ? undefined : isTablet ? 'repeat(4, 1fr)' : 'repeat(7, 1fr)',
+          gap: 8,
+          overflowX: isMobile ? 'auto' : 'visible',
+          paddingBottom: isMobile ? 8 : 0,
+          scrollBehavior: 'smooth',
+          WebkitOverflowScrolling: 'touch',
+          scrollSnapType: isMobile ? 'x mandatory' : undefined,
+        }}>
           {(planning?.days || []).map((day) => (
-            <DayColumn key={day.date} day={day} onToggleSlot={toggleSlot} />
+            <div
+              key={day.date}
+              style={{
+                flex: isMobile ? '0 0 calc(100vw - 32px)' : undefined,
+                minWidth: isMobile ? 0 : undefined,
+                scrollSnapAlign: isMobile ? 'start' : undefined,
+              }}
+            >
+              <DayColumn key={day.date} day={day} onToggleSlot={toggleSlot} />
+            </div>
           ))}
         </div>
       )}
@@ -168,9 +214,11 @@ export default function Dashboard() {
       {motivation && (
         <div style={{
           background: 'linear-gradient(135deg, #14532d 0%, #166534 100%)',
-          borderRadius: 20, padding: '24px 28px',
+          borderRadius: 20, padding: isMobile ? '16px' : '24px 28px',
           boxShadow: '0 8px 32px rgba(20, 83, 45, 0.25)',
-          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24,
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+          gap: isMobile ? 16 : 24,
           position: 'relative', overflow: 'hidden',
         }}>
           {/* Cercles décoratifs */}
@@ -188,9 +236,9 @@ export default function Dashboard() {
             </div>
             <div>
               <div style={{ fontSize:10, fontWeight:700, color:'#4ade80', letterSpacing:1, textTransform:'uppercase', marginBottom:6 }}>
-                Verset du jour
+                Verset
               </div>
-              <p style={{ fontSize:15, color:'#fff', fontStyle:'italic', lineHeight:1.65, marginBottom:6 }}>
+              <p style={{ fontSize: isMobile ? 13 : 15, color:'#fff', fontStyle:'italic', lineHeight:1.65, marginBottom:6 }}>
                 "{motivation.verse?.text}"
               </p>
               <p style={{ fontSize:11, color:'rgba(255,255,255,0.55)', fontWeight:600 }}>— {motivation.verse?.ref}</p>
@@ -210,7 +258,7 @@ export default function Dashboard() {
               <div style={{ fontSize:10, fontWeight:700, color:'#fbbf24', letterSpacing:1, textTransform:'uppercase', marginBottom:6 }}>
                 Encouragement
               </div>
-              <p style={{ fontSize:15, color:'#fff', lineHeight:1.65 }}>
+              <p style={{ fontSize: isMobile ? 13 : 15, color:'#fff', lineHeight:1.65 }}>
                 {motivation.encouragement}
               </p>
             </div>

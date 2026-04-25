@@ -13,6 +13,16 @@ export default function Stats() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState('all'); // 'all', '4weeks', '8weeks'
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth < 640;
+  const isTablet = windowWidth < 1024;
 
   useEffect(() => {
     api.get('/stats/overview').then((r) => setData(r.data)).finally(() => setLoading(false));
@@ -158,7 +168,7 @@ export default function Stats() {
       {/* KPI Cards */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(4, 1fr)', 
+        gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', 
         gap: 16, 
         marginBottom: 24 
       }}>
@@ -401,7 +411,7 @@ export default function Stats() {
       </div>
 
       {/* Deux colonnes : Catégories + Répartition */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : '1fr 1fr', gap: 24 }}>
         {/* Catégories */}
         <div style={{
           background: '#fff',

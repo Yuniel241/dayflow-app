@@ -27,10 +27,10 @@ const empty = {
   days: [], deadline: '', icon: 'Zap', color: '#4ade80',
 };
 
-const IconPicker = ({ selectedIcon, onChange }) => (
+const IconPicker = ({ selectedIcon, onChange, isMobile }) => (
   <div style={{ 
     display: 'grid', 
-    gridTemplateColumns: 'repeat(6, 1fr)', 
+    gridTemplateColumns: isMobile ? 'repeat(4, 1fr)' : 'repeat(6, 1fr)', 
     gap: '8px', 
     padding: '12px', 
     background: '#f8fafc', 
@@ -78,6 +78,16 @@ export default function Activities() {
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth < 640;
+  const isTablet = windowWidth >= 640 && windowWidth < 1024;
 
   useEffect(() => {
     api.get('/activities').then((r) => setActivities(r.data.activities)).finally(() => setLoading(false));
@@ -148,15 +158,15 @@ export default function Activities() {
       maxWidth: 1000, 
       margin: '0 auto', 
       animation: 'fadeIn 0.4s ease-out',
-      padding: '0 8px'
+      padding: isMobile ? '0 12px' : '0 24px'
     }}>
       
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
           <div style={{
-            width: 48,
-            height: 48,
+            width: isMobile ? 40 : 48,
+            height: isMobile ? 40 : 48,
             borderRadius: 16,
             background: 'linear-gradient(135deg, #22c55e, #16a34a)',
             display: 'flex',
@@ -164,13 +174,13 @@ export default function Activities() {
             justifyContent: 'center',
             boxShadow: '0 4px 12px rgba(34,197,94,0.25)'
           }}>
-            <Zap size={24} color="#fff" />
+            <Zap size={isMobile ? 20 : 24} color="#fff" />
           </div>
           <div>
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: '#0f172a', margin: 0 }}>
+            <h1 style={{ fontSize: isMobile ? 24 : 28, fontWeight: 800, color: '#0f172a', margin: 0 }}>
               Mes activités
             </h1>
-            <p style={{ fontSize: 14, color: '#64748b', marginTop: 4 }}>
+            <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>
               Gérez vos tâches et activités quotidiennes
             </p>
           </div>
@@ -183,37 +193,43 @@ export default function Activities() {
         justifyContent: 'space-between', 
         alignItems: 'center', 
         marginBottom: 24,
-        flexWrap: 'wrap',
+        flexDirection: isMobile ? 'column' : 'row',
         gap: 16
       }}>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ 
+          display: 'flex', 
+          gap: 8, 
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          width: isMobile ? '100%' : 'auto'
+        }}>
           <div style={{
             background: '#f0fdf4',
             borderRadius: 12,
-            padding: '8px 16px',
+            padding: isMobile ? '6px 12px' : '8px 16px',
             border: '1px solid #bbf7d0'
           }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#166534' }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#166534' }}>
               Total: {activities.length} activité(s)
             </span>
           </div>
           <div style={{
             background: '#f1f5f9',
             borderRadius: 12,
-            padding: '8px 16px',
+            padding: isMobile ? '6px 12px' : '8px 16px',
             border: '1px solid #e2e8f0'
           }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#64748b' }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#64748b' }}>
               Flexibles: {activities.filter(a => a.type === 'flexible').length}
             </span>
           </div>
           <div style={{
             background: '#fef3c7',
             borderRadius: 12,
-            padding: '8px 16px',
+            padding: isMobile ? '6px 12px' : '8px 16px',
             border: '1px solid #fde68a'
           }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#92400e' }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#92400e' }}>
               Fixes: {activities.filter(a => a.type === 'fixe').length}
             </span>
           </div>
@@ -225,16 +241,18 @@ export default function Activities() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '10px 24px',
+            padding: isMobile ? '8px 20px' : '10px 24px',
             borderRadius: '12px',
             background: 'linear-gradient(135deg, #22c55e, #16a34a)',
             color: '#fff',
             fontWeight: 700,
-            fontSize: '14px',
+            fontSize: '13px',
             border: 'none',
             cursor: 'pointer',
             transition: 'all 0.2s',
-            boxShadow: '0 2px 8px rgba(34,197,94,0.3)'
+            boxShadow: '0 2px 8px rgba(34,197,94,0.3)',
+            width: isMobile ? '100%' : 'auto',
+            justifyContent: 'center'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px)';
@@ -245,7 +263,7 @@ export default function Activities() {
             e.currentTarget.style.boxShadow = '0 2px 8px rgba(34,197,94,0.3)';
           }}
         >
-          <BookmarkPlus size={18} />
+          <BookmarkPlus size={16} />
           <span>Nouvelle activité</span>
         </button>
       </div>
@@ -255,10 +273,10 @@ export default function Activities() {
         display: 'flex',
         gap: 12,
         marginBottom: 24,
-        flexWrap: 'wrap',
+        flexDirection: isMobile ? 'column' : 'row',
         padding: '12px 0'
       }}>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ fontSize: 12, color: '#64748b' }}>Type:</span>
           {['all', 'flexible', 'fixe'].map(type => (
             <button
@@ -281,7 +299,7 @@ export default function Activities() {
           ))}
         </div>
         
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ fontSize: 12, color: '#64748b' }}>Catégorie:</span>
           <select
             value={filterCategory}
@@ -305,7 +323,7 @@ export default function Activities() {
         </div>
       </div>
 
-      {/* Form modal */}
+      {/* Form modal - Version responsive améliorée */}
       {showForm && (
         <div style={{
           position: 'fixed',
@@ -316,11 +334,12 @@ export default function Activities() {
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 100,
+          padding: isMobile ? '16px' : '0',
         }} onClick={(e) => e.target === e.currentTarget && setShowForm(false)}>
           <div style={{
             background: '#fff',
             borderRadius: 24,
-            padding: '32px',
+            padding: isMobile ? '20px' : '32px',
             width: '100%',
             maxWidth: 560,
             boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
@@ -329,7 +348,7 @@ export default function Activities() {
             overflowY: 'auto'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', margin: 0 }}>
+              <h2 style={{ fontSize: isMobile ? 18 : 20, fontWeight: 800, color: '#0f172a', margin: 0 }}>
                 {editing ? 'Modifier l\'activité' : 'Nouvelle activité'}
               </h2>
               <button
@@ -372,11 +391,16 @@ export default function Activities() {
                 </label>
                 <IconPicker 
                   selectedIcon={form.icon} 
-                  onChange={(iconName) => setForm({ ...form, icon: iconName })} 
+                  onChange={(iconName) => setForm({ ...form, icon: iconName })}
+                  isMobile={isMobile}
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', 
+                gap: 12 
+              }}>
                 <div>
                   <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>
                     Durée (minutes)
@@ -395,13 +419,17 @@ export default function Activities() {
                     Type
                   </label>
                   <select style={inp} value={form.type} onChange={e => setForm({...form, type: e.target.value})}>
-                    <option value="flexible">🔄 Flexible (planification intelligente)</option>
-                    <option value="fixe">⏰ Fixe (horaire précis)</option>
+                    <option value="flexible">🔄 Flexible</option>
+                    <option value="fixe">⏰ Fixe</option>
                   </select>
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', 
+                gap: 12 
+              }}>
                 <div>
                   <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>
                     Catégorie
@@ -429,7 +457,11 @@ export default function Activities() {
               </div>
 
               {form.type === 'fixe' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', 
+                  gap: 12 
+                }}>
                   <div>
                     <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>
                       Heure début
@@ -447,25 +479,29 @@ export default function Activities() {
 
               <div>
                 <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 8 }}>
-                  Jours de la semaine (vide = tous les jours)
+                  Jours de la semaine
                 </label>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: isMobile ? 'repeat(4, 1fr)' : 'repeat(7, 1fr)', 
+                  gap: 8 
+                }}>
                   {DAYS.map(d => (
                     <button 
                       type="button" 
                       key={d} 
                       onClick={() => toggleDay(d)} 
                       style={{
-                        width: 44,
-                        height: 44,
+                        padding: isMobile ? '10px 0' : '10px',
                         borderRadius: 12,
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: 700,
                         background: form.days.includes(d) ? '#22c55e' : '#f1f5f9',
                         color: form.days.includes(d) ? '#fff' : '#64748b',
                         border: form.days.includes(d) ? 'none' : '1px solid #e2e8f0',
                         cursor: 'pointer',
-                        transition: 'all 0.2s'
+                        transition: 'all 0.2s',
+                        textAlign: 'center'
                       }}
                     >
                       {DAY_LABELS[d]}
@@ -493,7 +529,12 @@ export default function Activities() {
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+              <div style={{ 
+                display: 'flex', 
+                gap: 12, 
+                marginTop: 8,
+                flexDirection: isMobile ? 'column' : 'row'
+              }}>
                 <button 
                   type="submit" 
                   style={{ 
@@ -537,7 +578,7 @@ export default function Activities() {
         </div>
       )}
 
-      {/* Activity list */}
+      {/* Activity list - Version responsive améliorée */}
       {loading ? (
         <div style={{ 
           textAlign: 'center', 
@@ -560,7 +601,7 @@ export default function Activities() {
       ) : filteredActivities.length === 0 ? (
         <div style={{ 
           textAlign: 'center', 
-          padding: 80, 
+          padding: isMobile ? 40 : 80, 
           background: '#fff',
           borderRadius: 20,
           border: '1px solid #e2e8f0'
@@ -607,81 +648,107 @@ export default function Activities() {
               <div key={a._id} style={{
                 background: '#fff',
                 borderRadius: 16,
-                padding: '16px 20px',
+                padding: isMobile ? '12px' : '16px 20px',
                 border: '1px solid #e2e8f0',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
                 display: 'flex',
-                alignItems: 'center',
-                gap: 16,
+                flexDirection: isMobile ? 'column' : 'row',
+                alignItems: isMobile ? 'stretch' : 'center',
+                gap: isMobile ? 12 : 16,
                 transition: 'all 0.3s'
               }}
               onMouseEnter={e => {
                 e.currentTarget.style.boxShadow = '0 8px 20px -8px rgba(0,0,0,0.1)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
+                if (!isMobile) e.currentTarget.style.transform = 'translateY(-2px)';
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
-                e.currentTarget.style.transform = 'translateY(0)';
+                if (!isMobile) e.currentTarget.style.transform = 'translateY(0)';
               }}>
                 {/* Barre de couleur */}
                 <div style={{
-                  width: 4,
-                  height: 40,
+                  width: isMobile ? '100%' : 4,
+                  height: isMobile ? 4 : 40,
                   borderRadius: 2,
                   background: a.color,
                   flexShrink: 0
                 }} />
                 
-                {/* Icône */}
-                <div style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 14,
-                  background: `${categoryInfo.color}15`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
+                {/* Icône et infos - Version mobile améliorée */}
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 12,
+                  width: '100%'
                 }}>
-                  {renderLucideIcon(a.icon || CATEGORY_ICONS[a.category], 22, categoryInfo.color)}
-                </div>
-                
-                {/* Infos */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
-                    <span style={{ fontSize: 15, fontWeight: 700, color: '#0f172a' }}>{a.name}</span>
-                    <span style={{
-                      fontSize: 10,
-                      padding: '2px 8px',
-                      borderRadius: 20,
-                      background: a.type === 'fixe' ? '#fef3c7' : '#f0fdf4',
-                      color: a.type === 'fixe' ? '#92400e' : '#166534',
-                      fontWeight: 600
-                    }}>
-                      {a.type === 'fixe' ? '⏰ Fixe' : '🔄 Flexible'}
-                    </span>
+                  <div style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 14,
+                    background: `${categoryInfo.color}15`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    {renderLucideIcon(a.icon || CATEGORY_ICONS[a.category], 22, categoryInfo.color)}
                   </div>
-                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-                    <span style={{ fontSize: 12, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <Clock size={12} /> {a.duration} min
-                    </span>
-                    <span style={{ fontSize: 12, color: prio?.color, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <Flag size={12} /> {prio?.label}
-                    </span>
-                    {a.days.length > 0 && (
-                      <span style={{ fontSize: 12, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <Calendar size={12} /> {a.days.map(d => DAY_LABELS[d]).join(', ')}
+                  
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: '#0f172a' }}>{a.name}</span>
+                      <span style={{
+                        fontSize: 10,
+                        padding: '2px 8px',
+                        borderRadius: 20,
+                        background: a.type === 'fixe' ? '#fef3c7' : '#f0fdf4',
+                        color: a.type === 'fixe' ? '#92400e' : '#166534',
+                        fontWeight: 600
+                      }}>
+                        {a.type === 'fixe' ? '⏰ Fixe' : '🔄 Flexible'}
                       </span>
+                    </div>
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: 12, 
+                      flexWrap: 'wrap', 
+                      alignItems: 'center' 
+                    }}>
+                      <span style={{ fontSize: 12, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Clock size={12} /> {a.duration} min
+                      </span>
+                      <span style={{ fontSize: 12, color: prio?.color, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Flag size={12} /> {prio?.label}
+                      </span>
+                      {a.days.length > 0 && !isMobile && (
+                        <span style={{ fontSize: 12, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Calendar size={12} /> {a.days.map(d => DAY_LABELS[d]).join(', ')}
+                        </span>
+                      )}
+                    </div>
+                    {a.days.length > 0 && isMobile && (
+                      <div style={{ marginTop: 6 }}>
+                        <span style={{ fontSize: 11, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Calendar size={11} /> {a.days.map(d => DAY_LABELS[d]).join(', ')}
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>
                 
-                {/* Actions */}
-                <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                {/* Actions - Version mobile améliorée */}
+                <div style={{ 
+                  display: 'flex', 
+                  gap: 8, 
+                  flexShrink: 0,
+                  width: isMobile ? '100%' : 'auto',
+                  justifyContent: isMobile ? 'space-between' : 'flex-end'
+                }}>
                   <button 
                     onClick={() => edit(a)} 
                     style={{
-                      padding: '8px 12px',
+                      flex: isMobile ? 1 : 'auto',
+                      padding: isMobile ? '8px' : '8px 12px',
                       borderRadius: 10,
                       background: '#f1f5f9',
                       color: '#475569',
@@ -691,6 +758,7 @@ export default function Activities() {
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       gap: 6,
                       transition: 'all 0.2s'
                     }}
@@ -701,12 +769,14 @@ export default function Activities() {
                       e.currentTarget.style.background = '#f1f5f9';
                     }}
                   >
-                    <Edit2 size={14} /> Modifier
+                    <Edit2 size={14} /> 
+                    {!isMobile && 'Modifier'}
                   </button>
                   <button 
                     onClick={() => del(a._id)} 
                     style={{
-                      padding: '8px 12px',
+                      flex: isMobile ? 1 : 'auto',
+                      padding: isMobile ? '8px' : '8px 12px',
                       borderRadius: 10,
                       background: '#fef2f2',
                       color: '#ef4444',
@@ -716,6 +786,7 @@ export default function Activities() {
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       gap: 6,
                       transition: 'all 0.2s'
                     }}
@@ -726,7 +797,8 @@ export default function Activities() {
                       e.currentTarget.style.background = '#fef2f2';
                     }}
                   >
-                    <Trash2 size={14} /> Supprimer
+                    <Trash2 size={14} /> 
+                    {!isMobile && 'Supprimer'}
                   </button>
                 </div>
               </div>
