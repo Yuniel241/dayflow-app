@@ -4,33 +4,22 @@ pipeline {
     stages {
         stage('Nettoyage') {
             steps {
-                echo 'Nettoyage des images orphelines pour gagner de la place...'
-                sh 'docker image prune -f'
+                // On utilise le chemin que tu as trouvé : /usr/bin/docker
+                sh '/usr/bin/docker image prune -f'
             }
         }
 
         stage('Build & Deploy') {
             steps {
-                echo 'Lancement du déploiement DayFlow via Docker Compose...'
-                // Le flag --build force la reconstruction des images si le code a changé
-                sh 'docker compose up -d --build'
-            }
-        }
-
-        stage('Vérification') {
-            steps {
-                echo 'Vérification du statut des conteneurs...'
-                sh 'docker ps | grep dayflow'
+                echo 'Lancement du déploiement via Docker Compose Plugin...'
+                // Syntaxe correcte pour le plugin Compose : docker compose
+                sh '/usr/bin/docker compose up -d --build'
             }
         }
     }
     
     post {
-        success {
-            echo 'Déploiement réussi ! DayFlow est à jour.'
-        }
-        failure {
-            echo 'Erreur lors du déploiement. Vérifie les logs Docker.'
-        }
+        success { echo 'DayFlow est en ligne !' }
+        failure { echo 'Le déploiement a échoué.' }
     }
 }
