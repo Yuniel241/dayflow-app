@@ -2,24 +2,27 @@ pipeline {
     agent any
 
     stages {
-        stage('Nettoyage') {
+        stage('Preparation') {
             steps {
-                // On utilise le chemin que tu as trouvé : /usr/bin/docker
-                sh '/usr/bin/docker image prune -f'
+                // On récupère le fichier secret et on le place temporairement dans le workspace
+                withCredentials([file(credentialsId: 'dayflow-server-env', variable: 'ENV_FILE')]) {
+                    sh "cp \$ENV_FILE server/.env"
+                }
             }
         }
 
         stage('Build & Deploy') {
             steps {
-                echo 'Lancement du déploiement via Docker Compose Plugin...'
-                // Syntaxe correcte pour le plugin Compose : docker compose
-                sh '/usr/bin/docker compose up -d --build'
+                echo 'Lancement du déploiement...'
+                // Plus besoin de chemins compliqués, docker compose suffit
+                sh 'docker compose up -d --build'
             }
         }
-    }
-    
-    post {
-        success { echo 'DayFlow est en ligne !' }
-        failure { echo 'Le déploiement a échoué.' }
+
+        stage('Nettoyage') {
+            steps {
+                sh 'docker image prune -f'
+            }
+        }
     }
 }
