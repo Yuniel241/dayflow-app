@@ -13,7 +13,7 @@ pipeline {
             steps {
                 echo 'Lancement du déploiement DayFlow via Docker Compose...'
                 // Le flag --build force la reconstruction des images si le code a changé
-                sh 'docker-compose up -d --build'
+                sh 'docker compose up -d --build'
             }
         }
 
