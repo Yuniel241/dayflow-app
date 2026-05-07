@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: dayflow-db
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - dayflow-data:/data/db
+
+  ml-api:
+    build: ./ml-api
+    container_name: dayflow-ml
+    restart: always
+    # Pas besoin d'exposer le port 8000 au public, NPM ne parlera qu'au client/server
+    expose:
+      - "8000"
+
+  server:
+    build: ./server
+    container_name: dayflow-server
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file: ./server/.env
+    depends_on:
+      - mongodb
+      - ml-api
+
+  client:
+    build: ./client
+    container_name: dayflow-client
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - server
+
+volumes:
+  dayflow-data:

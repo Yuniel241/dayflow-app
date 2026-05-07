@@ -7,6 +7,7 @@ const connectDB = require('./config/db');
 require('./config/passport');
 
 const app = express();
+app.set('trust proxy', 1); // Indique à Express qu'il est derrière un proxy (NPM/Zrok)
 
 connectDB();
 
