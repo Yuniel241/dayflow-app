@@ -4,7 +4,6 @@ pipeline {
     stages {
         stage('Preparation') {
             steps {
-                // On récupère le fichier secret et on le place temporairement dans le workspace
                 withCredentials([file(credentialsId: 'dayflow-server-env', variable: 'ENV_FILE')]) {
                     sh "cp \$ENV_FILE server/.env"
                 }
@@ -13,8 +12,10 @@ pipeline {
 
         stage('Build & Deploy') {
             steps {
-                echo 'Lancement du déploiement...'
-                // Plus besoin de chemins compliqués, docker compose suffit
+                echo 'Nettoyage de l\'ancien déploiement et relancement...'
+                // Arrête les conteneurs existants du projet et supprime les orphelins
+                sh 'docker compose down --remove-orphans'
+                // Lance le nouveau build
                 sh 'docker compose up -d --build'
             }
         }
