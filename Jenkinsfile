@@ -12,11 +12,11 @@ pipeline {
 
         stage('Build & Deploy') {
             steps {
-                echo 'Nettoyage de l\'ancien déploiement et relancement...'
-                // Arrête les conteneurs existants du projet et supprime les orphelins
-                sh 'docker compose down --remove-orphans'
-                // Lance le nouveau build
-                sh 'docker compose up -d --build'
+                echo 'Nettoyage et mise à jour de l\'application dayflow-app...'
+                // Force l'arrêt du projet existant nommé dayflow-app
+                sh 'docker compose -p dayflow-app down'
+                // Reconstruit et relance sous le même nom de projet
+                sh 'docker compose -p dayflow-app up -d --build'
             }
         }
 
